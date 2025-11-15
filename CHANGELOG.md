@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/cloudhippie/clusterapi-kosmotron/compare/v1.0.0...v1.0.1) (2025-11-15)
+
+
+### Bugfixes
+
+* use correct worker config reference ([a583e37](https://github.com/cloudhippie/clusterapi-kosmotron/commit/a583e3751e22966b847b62ea201a0e9c1dab525b))
+
 ## 1.0.0 (2025-11-15)
 
 

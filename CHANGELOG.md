@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/cloudhippie/clusterapi-kosmotron/compare/v1.0.1...v1.0.2) (2025-11-15)
+
+
+### Bugfixes
+
+* use correct version schema for worker bootstrapping ([b73c880](https://github.com/cloudhippie/clusterapi-kosmotron/commit/b73c880d8adaedbc3c9463063bd89147c15998b3))
+
 ## [1.0.1](https://github.com/cloudhippie/clusterapi-kosmotron/compare/v1.0.0...v1.0.1) (2025-11-15)
 
 

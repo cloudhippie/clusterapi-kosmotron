@@ -1,0 +1,29 @@
+[
+  {
+    "op": "add",
+    "path": "/metadata/name",
+    "value": "${CLUSTER_NAME}-worker"
+  },
+  {
+    "op": "remove",
+    "path": "/metadata/namespace"
+  },
+  {
+    "op": "add",
+    "path": "/spec/template/spec/files/2/content",
+    "value": "net.bridge.bridge-nf-call-iptables = 1\nnet.bridge.bridge-nf-call-ip6tables = 1\nnet.ipv4.ip_forward = 1\nnet.ipv6.conf.all.forwarding = 1\nnet.ipv6.conf.all.accept_ra = 0\nnet.ipv6.conf.default.accept_ra = 0"
+  },
+  {
+    "op": "add",
+    "path": "/spec/template/spec/files/-",
+    "value": {
+      "path": "/etc/sysctl.d/99-fsnotify.conf",
+      "content": "fs.inotify.max_user_instances = 8192\nfs.inotify.max_user_watches = 1048576\nfs.inotify.max_queued_events = 65536"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/spec/template/spec/preKubeadmCommands/-",
+    "value": "echo \"KUBELET_EXTRA_ARGS=--node-ip=$(curl -sSL -4 ifconfig.me | head -n1),$(curl -sSL -6 ifconfig.me | head -n1)\" > /etc/default/kubelet"
+  }
+]

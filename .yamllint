@@ -1,0 +1,19 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/yamllint.json
+extends: default
+
+ignore: |
+  .pre-commit-config.yaml
+
+rules:
+  line-length: disable
+
+  document-end:
+    level: error
+  document-start:
+    level: error
+
+  indentation:
+    spaces: 2
+
+...

@@ -1,0 +1,64 @@
+[
+  {
+    "op": "add",
+    "path": "/metadata/name",
+    "value": "${CLUSTER_NAME}"
+  },
+  {
+    "op": "remove",
+    "path": "/metadata/namespace"
+  },
+  {
+    "op": "add",
+    "path": "/metadata/annotations",
+    "value": {
+      "capi.syself.com/allow-empty-control-plane-address": "true"
+    }
+  },
+  {
+    "op": "remove",
+    "path": "/spec/controlPlaneEndpoint"
+  },
+  {
+    "op": "add",
+    "path": "/spec/controlPlaneLoadBalancer/enabled",
+    "value": false
+  },
+  {
+    "op": "remove",
+    "path": "/spec/controlPlaneLoadBalancer/region"
+  },
+  {
+    "op": "add",
+    "path": "/spec/controlPlaneRegions",
+    "value": [
+      "fsn1",
+      "nbg1",
+      "hel1"
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/spec/hcloudNetwork/enabled",
+    "value": true
+  },
+  {
+    "op": "add",
+    "path": "/spec/hcloudPlacementGroups/1/name",
+    "value": "worker"
+  },
+  {
+    "op": "remove",
+    "path": "/spec/hcloudPlacementGroups/0"
+  },
+  {
+    "op": "add",
+    "path": "/spec/skipCreatingHetznerSecretInWorkloadCluster",
+    "value": true
+  },
+  {
+    "op": "add",
+    "path": "/spec/sshKeys/hcloud/0/name",
+    "value": "${SSH_KEY_NAME}"
+  }
+]

@@ -1,0 +1,290 @@
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: ${CLUSTER_NAME}
+  labels:
+    cluster: ${CLUSTER_NAME}
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+        - 10.1.0.0/16
+    services:
+      cidrBlocks:
+        - 10.96.0.0/12
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+    kind: K0smotronControlPlane
+    name: ${CLUSTER_NAME}-control-plane
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: HetznerCluster
+    name: ${CLUSTER_NAME}
+
+...
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: HCloudMachineTemplate
+metadata:
+  name: ${CLUSTER_NAME}-worker
+spec:
+  template:
+    spec:
+      imageName: ubuntu-24.04
+      placementGroupName: worker
+      type: ${HCLOUD_WORKER_MACHINE_TYPE}
+
+...
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: HCloudRemediationTemplate
+metadata:
+  name: worker-remediation-request
+spec:
+  template:
+    spec:
+      strategy:
+        retryLimit: 1
+        timeout: 180s
+        type: Reboot
+
+...
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: HetznerCluster
+metadata:
+  name: ${CLUSTER_NAME}
+  annotations:
+    capi.syself.com/allow-empty-control-plane-address: "true"
+spec:
+  controlPlaneLoadBalancer:
+    enabled: false
+  controlPlaneRegions:
+    - fsn1
+    - nbg1
+    - hel1
+  hcloudNetwork:
+    enabled: true
+  hcloudPlacementGroups:
+    - name: worker
+      type: spread
+  hetznerSecretRef:
+    key:
+      hcloudToken: hcloud
+      hetznerRobotPassword: robot-password
+      hetznerRobotUser: robot-user
+    name: hetzner
+  sshKeys:
+    hcloud:
+      - name: ${SSH_KEY_NAME}
+  skipCreatingHetznerSecretInWorkloadCluster: true
+
+...
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+kind: K0smotronControlPlane
+metadata:
+  name: ${CLUSTER_NAME}-control-plane
+spec:
+  replicas: ${CONTROL_PLANE_MACHINE_COUNT}
+  version: ${KUBERNETES_VERSION}-k0s.0
+  persistence:
+    type: emptyDir
+  service:
+    type: LoadBalancer
+    annotations:
+      external-dns.alpha.kubernetes.io/ttl: "1"
+      load-balancer.hetzner.cloud/use-private-ip: "true"
+      load-balancer.hetzner.cloud/disable-private-ingress: "true"
+      load-balancer.hetzner.cloud/type: "lb11"
+      load-balancer.hetzner.cloud/network-zone: "eu-central"
+  k0sConfig:
+    apiVersion: k0s.k0sproject.io/v1beta1
+    kind: ClusterConfig
+    metadata:
+      name: k0s
+    spec:
+      controllerManager:
+        extraArgs:
+          cloud-provider: external
+      network:
+        podCIDR: 10.244.0.0/16
+        serviceCIDR: 10.96.0.0/12
+      telemetry:
+        enabled: false
+  monitoring:
+    enabled: true
+
+...
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+kind: K0sWorkerConfigTemplate
+metadata:
+  name: ${CLUSTER_NAME}
+spec:
+  template:
+    spec:
+      version: ${KUBERNETES_VERSION}-k0s.0
+
+...
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  labels:
+    nodepool: ${CLUSTER_NAME}-fsn1
+    cluster: ${CLUSTER_NAME}
+  name: ${CLUSTER_NAME}-fsn1
+spec:
+  clusterName: ${CLUSTER_NAME}
+  replicas: ${WORKER_MACHINE_COUNT}
+  selector:
+    matchLabels: null
+  template:
+    metadata:
+      labels:
+        nodepool: ${CLUSTER_NAME}-fsn1
+        cluster: ${CLUSTER_NAME}
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: K0sWorkerConfigTemplate
+          name: ${CLUSTER_NAME}-worker
+      clusterName: ${CLUSTER_NAME}
+      failureDomain: fsn1
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: HCloudMachineTemplate
+        name: ${CLUSTER_NAME}-worker
+      version: ${KUBERNETES_VERSION}
+
+...
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  labels:
+    nodepool: ${CLUSTER_NAME}-hel1
+    cluster: ${CLUSTER_NAME}
+  name: ${CLUSTER_NAME}-hel1
+spec:
+  clusterName: ${CLUSTER_NAME}
+  replicas: ${WORKER_MACHINE_COUNT}
+  selector:
+    matchLabels: null
+  template:
+    metadata:
+      labels:
+        nodepool: ${CLUSTER_NAME}-hel1
+        cluster: ${CLUSTER_NAME}
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: K0sWorkerConfigTemplate
+          name: ${CLUSTER_NAME}-worker
+      clusterName: ${CLUSTER_NAME}
+      failureDomain: hel1
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: HCloudMachineTemplate
+        name: ${CLUSTER_NAME}-worker
+      version: ${KUBERNETES_VERSION}
+
+...
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  labels:
+    nodepool: ${CLUSTER_NAME}-nbg1
+    cluster: ${CLUSTER_NAME}
+  name: ${CLUSTER_NAME}-nbg1
+spec:
+  clusterName: ${CLUSTER_NAME}
+  replicas: ${WORKER_MACHINE_COUNT}
+  selector:
+    matchLabels: null
+  template:
+    metadata:
+      labels:
+        nodepool: ${CLUSTER_NAME}-nbg1
+        cluster: ${CLUSTER_NAME}
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: K0sWorkerConfigTemplate
+          name: ${CLUSTER_NAME}-worker
+      clusterName: ${CLUSTER_NAME}
+      failureDomain: nbg1
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: HCloudMachineTemplate
+        name: ${CLUSTER_NAME}-worker
+      version: ${KUBERNETES_VERSION}
+
+...
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineHealthCheck
+metadata:
+  name: ${CLUSTER_NAME}-worker-unhealthy-5m
+spec:
+  clusterName: ${CLUSTER_NAME}
+  maxUnhealthy: 100%
+  nodeStartupTimeout: 10m
+  remediationTemplate:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: HCloudRemediationTemplate
+    name: worker-remediation-request
+  selector:
+    matchLabels:
+      cluster: ${CLUSTER_NAME}
+  unhealthyConditions:
+    - status: Unknown
+      timeout: 180s
+      type: Ready
+    - status: "False"
+      timeout: 180s
+      type: Ready
+
+...
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-${CLUSTER_NAME}-oidc
+data:
+  cluster-${CLUSTER_NAME}-oidc.yaml: |
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: oidc:cluster-${CLUSTER_NAME}
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: cluster-admin
+    subjects:
+      - apiGroup: rbac.authorization.k8s.io
+        kind: Group
+        name: oidc:cluster-${CLUSTER_NAME}
+
+...
+---
+apiVersion: addons.cluster.x-k8s.io/v1beta1
+kind: ClusterResourceSet
+metadata:
+  name: cluster-${CLUSTER_NAME}-oidc
+spec:
+  strategy: Reconcile
+  clusterSelector:
+    matchLabels:
+      cluster: ${CLUSTER_NAME}
+  resources:
+    - name: cluster-${CLUSTER_NAME}-oidc
+      kind: ConfigMap
+
+...

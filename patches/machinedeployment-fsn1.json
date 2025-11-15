@@ -62,5 +62,10 @@
     "op": "add",
     "path": "/spec/template/spec/bootstrap/configRef/kind",
     "value": "K0sWorkerConfigTemplate"
+  },
+  {
+    "op": "add",
+    "path": "/spec/template/spec/bootstrap/configRef/name",
+    "value": "${CLUSTER_NAME}"
   }
 ]

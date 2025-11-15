@@ -125,7 +125,7 @@ metadata:
 spec:
   template:
     spec:
-      version: ${KUBERNETES_VERSION}-k0s.0
+      version: ${KUBERNETES_VERSION}+k0s.0
 
 ...
 ---

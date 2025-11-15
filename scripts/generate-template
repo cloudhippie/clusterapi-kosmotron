@@ -84,7 +84,7 @@ metadata:
 spec:
   template:
     spec:
-      version: v100.0.0-k0s.0
+      version: v100.0.0+k0s.0
 
 ...
 EOF

@@ -49,6 +49,8 @@ spec:
     type: emptyDir
   service:
     type: LoadBalancer
+    apiPort: 6443
+    konnectivityPort: 8132
     annotations:
       external-dns.alpha.kubernetes.io/ttl: "1"
       load-balancer.hetzner.cloud/use-private-ip: "true"

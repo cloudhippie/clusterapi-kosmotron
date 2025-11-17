@@ -43,13 +43,8 @@
     "value": true
   },
   {
-    "op": "add",
-    "path": "/spec/hcloudPlacementGroups/1/name",
-    "value": "worker"
-  },
-  {
     "op": "remove",
-    "path": "/spec/hcloudPlacementGroups/0"
+    "path": "/spec/hcloudPlacementGroups"
   },
   {
     "op": "add",

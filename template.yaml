@@ -32,7 +32,6 @@ spec:
   template:
     spec:
       imageName: ubuntu-24.04
-      placementGroupName: worker
       type: ${HCLOUD_WORKER_MACHINE_TYPE}
 
 ...
@@ -66,9 +65,6 @@ spec:
     - hel1
   hcloudNetwork:
     enabled: true
-  hcloudPlacementGroups:
-    - name: worker
-      type: spread
   hetznerSecretRef:
     key:
       hcloudToken: hcloud

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/cloudhippie/clusterapi-kosmotron/compare/v1.1.1...v1.2.0) (2025-11-17)
+
+
+### Features
+
+* drop worker placement group ([1765354](https://github.com/cloudhippie/clusterapi-kosmotron/commit/1765354ec188d6b67cf68f6d6957af85eb4fd68b))
+
 ## [1.1.1](https://github.com/cloudhippie/clusterapi-kosmotron/compare/v1.1.0...v1.1.1) (2025-11-17)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/cloudhippie/clusterapi-kosmotron/compare/v1.1.0...v1.1.1) (2025-11-17)
+
+
+### Bugfixes
+
+* add escaping for variables ([789423b](https://github.com/cloudhippie/clusterapi-kosmotron/commit/789423b099c0e3ff21e2e82e51b56a9bb9dbe406))
+
 ## [1.1.0](https://github.com/cloudhippie/clusterapi-kosmotron/compare/v1.0.2...v1.1.0) (2025-11-17)
 
 

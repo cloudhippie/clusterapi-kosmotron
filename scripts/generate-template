@@ -67,6 +67,7 @@ spec:
         extraArgs:
           cloud-provider: external
       network:
+        provider: custom
         podCIDR: 10.244.0.0/16
         serviceCIDR: 10.96.0.0/12
       telemetry:
@@ -87,6 +88,61 @@ spec:
   template:
     spec:
       version: v100.0.0+k0s.0
+      args:
+        - --kubelet-extra-args="--cloud-provider=external --node-ip=$(ip -4 -o addr show scope global | grep -vE 'cali|tunl|wireguard' | awk '{print $4}' | cut -d/ -f1 | grep -m1 -E '^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)')"
+      files:
+        - path: /etc/modules-load.d/crio.conf
+          owner: root:root
+          permissions: "0744"
+          content: |
+            overlay
+            br_netfilter
+        - path: /etc/sysctl.d/99-kubernetes.conf
+          owner: root:root
+          permissions: "0744"
+          content: |-
+            net.bridge.bridge-nf-call-iptables = 1
+            net.bridge.bridge-nf-call-ip6tables = 1
+            net.ipv4.ip_forward = 1
+            net.ipv6.conf.all.forwarding = 1
+            net.ipv6.conf.all.accept_ra = 0
+            net.ipv6.conf.default.accept_ra = 0
+        - path: /etc/sysctl.d/99-kubelet.conf
+          owner: root:root
+          permissions: "0744"
+          content: |-
+            vm.overcommit_memory=1
+            kernel.panic=10
+            kernel.panic_on_oops=1
+        - path: /etc/sysctl.d/99-fsnotify.conf
+          owner: root:root
+          permissions: "0744"
+          content: |-
+            fs.inotify.max_user_instances = 8192
+            fs.inotify.max_user_watches = 1048576
+            fs.inotify.max_queued_events = 65536
+        - path: /etc/apt/apt.conf.d/50unattended-upgrades
+          owner: root:root
+          permissions: "0744"
+          content: |-
+            Unattended-Upgrade::DevRelease "false";
+            Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+            Unattended-Upgrade::Remove-Unused-Dependencies "true";
+            Unattended-Upgrade::Automatic-Reboot "false";
+            Unattended-Upgrade::SyslogEnable "true";
+            Unattended-Upgrade::SyslogFacility "daemon";
+            Unattended-Upgrade::Allowed-Origins {
+              "${distro_id}:${distro_codename}";
+              "${distro_id}:${distro_codename}-security";
+              "${distro_id}:${distro_codename}-updates";
+              "${distro_id}:${distro_codename}-proposed";
+              "${distro_id}:${distro_codename}-backports";
+              "${distro_id}ESMApps:${distro_codename}-apps-security";
+              "${distro_id}ESM:${distro_codename}-infra-security";
+            };
+      preStartCommands:
+        - modprobe overlay && modprobe br_netfilter && sysctl --system
+        - install -d -m 755 -o root -g root /var/lib/kubelet/plugins_registry
 
 ...
 EOF

@@ -1,6 +1,6 @@
 # ClusterAPI: K0smotron
 
-[![Testing Build](https://github.com/cloudhippie/clusterapi-kosmotron/actions/workflows/testing.yml/badge.svg)](https://github.com/cloudhippie/clusterapi-kosmotron/actions/workflows/testing.yml)
+[![General Build](https://github.com/cloudhippie/clusterapi-kosmotron/actions/workflows/general.yml/badge.svg)](https://github.com/cloudhippie/clusterapi-kosmotron/actions/workflows/general.yml)
 
 This repository generates and defines a template for ClusterAPI.
 
